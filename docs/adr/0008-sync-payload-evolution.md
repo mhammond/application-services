@@ -42,17 +42,16 @@ or anywhere else.
 * We must not break "recent" Firefox installations, nor cause what the user might perceive as data-loss,
   when a "new" Firefox installation syncs, and vice-versa.
 * Some degree of breakage for "old" Firefox installations when "new" or "recent" firefoxes sync
-  might be considered acceptable if absolutely necessary.
-* However, breakage of "new" or "recent" Firefoxes should "old" versions sync is *not* acceptable.
-* Because such evolution should be rare, we do not want to set an up-front policy about locking out
-  "old" versions just because they might have a problem in the future. That is, we want to avoid
-  a policy that dictates versions more than (say) 2 years old will break when syncing "just in case"
+  might be considered acceptable if absolutely necessary. However, breakage of "new" or "recent"
+  Firefoxes when an "old" version syncs is *not* acceptable.
+* We do not want to set an up-front policy about locking out "old" versions just because they might have a problem in the future.
+  That is, we want to avoid a policy that dictates versions more than (say) 2 years old will break when syncing "just in case".
 * Any solution to this must be achievable in a relatively short timeframe as we know of product
   asks coming down the line which require this capability.
 
 ## Considered Options
 
-* A backwards compatible schema policy, consisting of  (a) having engines "round trip" data they
+* A backwards compatible schema policy, consisting of (a) having engines "round trip" data they
   do not know about and (b) never changing the semantics of existing data.
 * A policy which prevents "recent" clients from syncing, or editing data, or other restrictions.
 * A formal schema-driven process.
@@ -84,6 +83,10 @@ A summary of this option is a policy by which:
   that "new" clients must support both new fields *and* fields which are considered deprecated
   by these "new" clients because they are still used by "recent" versions.
 
+* When new fields added as part of this policy are themselves objects, it must be considered
+  whether those new sub-objects should also be covered by this policy - ie, whether they
+  themselves should carry unknown fields for future expansion.
+
 The pros and cons:
 
 * Good, because it meets the requirements.
@@ -100,7 +103,7 @@ The pros and cons:
   and handle the fact that only the old versions might be updated when it sees an incoming
   record written by a "recent" or "old" versions of Firefox. However, this should be rare.
 
-* Bad, because it's not possible to prove a proposed change meets the requirements - the policy
+* Bad, because it's not possible to enforce a proposed change meets the requirements - the policy
   is informal and requires good judgement as changes are proposed.
 
 ### A policy which prevents "recent" clients from syncing, or editing data
@@ -134,7 +137,7 @@ A process where payloads are frozen was rejected because:
 
 * The most naive approach here would not meet the needs of Firefox in the future.
 
-* A complicated system where we started creating new payload and new collections
+* A complicated system where we started creating new payloads and new collections
   (ie, freezing "old" schemas but then creating "new" schemas only understood by
   newer clients) could not be conceived in a way that still met the requirements,
   particularly around data-loss for older clients. For example, adding a credit-card
@@ -144,12 +147,12 @@ A process where payloads are frozen was rejected because:
 ### Use separate collections for new data
 
 We could store the new data in a separate collection. For example define a
-bookmarks2 collection where each record has the same guid as one in bookmarks alongside any new fields.
+`bookmarks2` collection where each record has the same guid as one in `bookmarks` alongside any new fields.
 Newer clients use both collections to sync.
 
 The pros and cons:
 
-* Good, because it allows newer clients to sync new data without affecting recent or older clients
+* Good, because it allows "new" clients to sync new data without affecting "recent" or "old" clients
 * Bad, because sync writes would lose atomicity without server changes.
   We can currently write to a single collection in an atomic way, but don't have a way to write to multiple collections.
 * Bad because this number of collections grows each time we want to add fields.
