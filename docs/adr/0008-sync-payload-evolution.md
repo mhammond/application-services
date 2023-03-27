@@ -48,6 +48,11 @@ or anywhere else.
   That is, we want to avoid a policy that dictates versions more than (say) 2 years old will break when syncing "just in case".
 * Any solution to this must be achievable in a relatively short timeframe as we know of product
   asks coming down the line which require this capability.
+* We have made a pragmatic decision that it *will* be acceptable for these unknown fields to be
+  lost if the user disconnects the account from sync, either by explicit action or because a
+  password reset caused the encryption keys to be lost, even if the account is reconnected. We
+  made this decision as we feel the additional complexity of implementing this doesn't match the
+  benefit of keeping the fields in these edge-cases.
 
 ## Considered Options
 
