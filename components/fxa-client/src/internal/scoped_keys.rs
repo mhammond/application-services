@@ -23,6 +23,8 @@ impl ScopedKey {
     }
 }
 
+// sync15 uses a KeyBundle for all its crypto, so make it easy to move between the 2.
+
 impl std::fmt::Debug for ScopedKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ScopedKey")

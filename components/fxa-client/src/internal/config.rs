@@ -210,7 +210,6 @@ impl From<FxaConfig> for Config {
     }
 }
 
-#[cfg(test)]
 /// Testing functionality
 impl Config {
     pub fn release(client_id: &str, redirect_uri: &str) -> Self {
