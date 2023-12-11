@@ -1,0 +1,55 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+[Custom]
+typedef string JsonValue;
+
+namespace webextstorage {
+
+};
+
+[Error]
+enum WebExtStorageError {
+    "QuotaError",
+    "JsonError",
+    "SqlError",
+    "ConnectionAlreadyOpen",
+    "InvalidConnectionType",
+    "IoError",
+    "InterruptedError",
+    "WrongApiForClose",
+    "IllegalDatabasePath",
+    "Utf8Error",
+    "OpenDatabaseError",
+    "OtherConnectionReferencesExist",
+    "DatabaseConnectionClosed",
+    "SyncError",
+};
+
+dictionary StorageValueChange {
+    string key;
+    JsonValue? old_value;
+    JsonValue? new_value;
+};
+
+dictionary StorageChanges {
+    sequence<StorageValueChange> changes;
+};
+
+interface WebExtStorageStore {
+    [Throws=WebExtStorageError]
+    constructor(string path);
+
+    [Throws=WebExtStorageError]
+    StorageChanges set(string ext_id, JsonValue val);
+
+    [Throws=WebExtStorageError]
+    JsonValue get(string ext_id, JsonValue keys);
+
+    [Throws=WebExtStorageError]
+    StorageChanges remove(string ext_id, JsonValue keys);
+
+    [Throws=WebExtStorageError]
+    StorageChanges clear(string ext_id);
+};

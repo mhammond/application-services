@@ -3,6 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use interrupt_support::Interrupted;
+use std::fmt;
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum QuotaReason {
@@ -11,8 +14,18 @@ pub enum QuotaReason {
     MaxItems,
 }
 
+impl fmt::Display for QuotaReason {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            QuotaReason::ItemBytes => write!(f, "ItemBytes"),
+            QuotaReason::MaxItems => write!(f, "MaxItems"),
+            QuotaReason::TotalBytes => write!(f, "TotalBytes"),
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
-pub enum ErrorKind {
+pub enum Error {
     #[error("Quota exceeded: {0:?}")]
     QuotaError(QuotaReason),
 
@@ -58,15 +71,4 @@ pub enum ErrorKind {
 
     #[error("Sync Error: {0}")]
     SyncError(String),
-}
-
-error_support::define_error! {
-    ErrorKind {
-        (JsonError, serde_json::Error),
-        (SqlError, rusqlite::Error),
-        (IoError, std::io::Error),
-        (InterruptedError, Interrupted),
-        (Utf8Error, std::str::Utf8Error),
-        (OpenDatabaseError, sql_support::open_database::Error),
-    }
 }

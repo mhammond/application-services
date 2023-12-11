@@ -25,6 +25,7 @@ pub use suggest;
 pub use sync_manager;
 pub use tabs;
 pub use viaduct;
+pub use webext_storage;
 
 /// In order to support the use case of consumers who don't know about megazords
 /// and don't need our e.g. networking or logging, we consider initialization

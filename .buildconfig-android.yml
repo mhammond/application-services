@@ -98,6 +98,13 @@ projects:
     - name: syncmanager
       type: aar
     description: Sync manager implementation
+  webextstorage:
+    path: components/webext-storage/android
+    artifactId: webextstorage
+    publications:
+    - name: webextstorage
+      type: aar
+    description: Component for web extenstion storage logic
   tabs:
     path: components/tabs/android
     artifactId: tabs

@@ -13,6 +13,7 @@ fxa-client = { path = "../../components/fxa-client" }
 logins = { path = "../../components/logins" }
 tabs = { path = "../../components/tabs/" }
 sync_manager = { path = "../../components/sync_manager/" }
+webext-storage = { path = "../../components/webext-storage/" }
 places = { path = "../../components/places" }
 push = { path = "../../components/push" }
 rc_log_ffi = { path = "../../components/rc_log" }

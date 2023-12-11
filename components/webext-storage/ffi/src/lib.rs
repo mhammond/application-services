@@ -5,7 +5,7 @@
 use std::os::raw::c_char;
 
 use ffi_support::{define_handle_map_deleter, ConcurrentHandleMap, ExternError, FfiStr};
-use webext_storage::{error, store::Store};
+use webext_storage::{error, store::WebExtStorageStore as Store};
 
 lazy_static::lazy_static! {
     static ref STORES: ConcurrentHandleMap<Store> = ConcurrentHandleMap::new();
@@ -30,7 +30,7 @@ pub extern "C" fn webext_store_set(
     log::debug!("webext_store_set");
     STORES.call_with_result(error, handle, |store| -> error::Result<_> {
         let val = serde_json::from_str(json.as_str())?;
-        let changes = store.set(ext_id.as_str(), val)?;
+        let changes = store.set(ext_id.into_string(), val)?;
         Ok(serde_json::to_string(&changes)?)
     })
 }
@@ -45,7 +45,7 @@ pub extern "C" fn webext_store_get(
     log::debug!("webext_store_get");
     STORES.call_with_result(error, handle, |store| -> error::Result<_> {
         let keys = serde_json::from_str(keys.as_str())?;
-        let val = store.get(ext_id.as_str(), keys)?;
+        let val = store.get(ext_id.into_string(), keys)?;
         Ok(serde_json::to_string(&val)?)
     })
 }
@@ -60,7 +60,7 @@ pub extern "C" fn webext_store_remove(
     log::debug!("webext_store_remove");
     STORES.call_with_result(error, handle, |store| -> error::Result<_> {
         let keys = serde_json::from_str(keys.as_str())?;
-        let changes = store.remove(ext_id.as_str(), keys)?;
+        let changes = store.remove(ext_id.into_string(), keys)?;
         Ok(serde_json::to_string(&changes)?)
     })
 }
@@ -73,7 +73,7 @@ pub extern "C" fn webext_store_clear(
 ) -> *mut c_char {
     log::debug!("webext_store_clear");
     STORES.call_with_result(error, handle, |store| -> error::Result<_> {
-        let changes = store.clear(ext_id.as_str())?;
+        let changes = store.clear(ext_id.into_string())?;
         Ok(serde_json::to_string(&changes)?)
     })
 }

@@ -28,11 +28,11 @@ use serde_json::Value as JsonValue;
 /// Note that our Db implementation is behind an Arc<> because we share that
 /// connection with our sync engines - ie, these engines also hold an Arc<>
 /// around the same object.
-pub struct Store {
+pub struct WebExtStorageStore {
     db: Arc<ThreadSafeStorageDb>,
 }
 
-impl Store {
+impl WebExtStorageStore {
     /// Creates a store backed by a database at `db_path`. The path can be a
     /// file path or `file:` URI.
     pub fn new(db_path: impl AsRef<Path>) -> Result<Self> {
@@ -58,10 +58,10 @@ impl Store {
 
     /// Sets one or more JSON key-value pairs for an extension ID. Returns a
     /// list of changes, with existing and new values for each key in `val`.
-    pub fn set(&self, ext_id: &str, val: JsonValue) -> Result<StorageChanges> {
+    pub fn set(&self, ext_id: String, val: JsonValue) -> Result<StorageChanges> {
         let db = self.db.lock();
         let tx = db.unchecked_transaction()?;
-        let result = api::set(&tx, ext_id, val)?;
+        let result = api::set(&tx, ext_id.as_str(), val)?;
         tx.commit()?;
         Ok(result)
     }
@@ -88,20 +88,20 @@ impl Store {
     ///
     /// This method always returns an object (that is, a
     /// `serde_json::Value::Object`).
-    pub fn get(&self, ext_id: &str, keys: JsonValue) -> Result<JsonValue> {
+    pub fn get(&self, ext_id: String, keys: JsonValue) -> Result<JsonValue> {
         // Don't care about transactions here.
         let db = self.db.lock();
-        api::get(&db, ext_id, keys)
+        api::get(&db, ext_id.as_str(), keys)
     }
 
     /// Deletes the values for one or more keys. As with `get`, `keys` can be
     /// either a single string key, or an array of string keys. Returns a list
     /// of changes, where each change contains the old value for each deleted
     /// key.
-    pub fn remove(&self, ext_id: &str, keys: JsonValue) -> Result<StorageChanges> {
+    pub fn remove(&self, ext_id: String, keys: JsonValue) -> Result<StorageChanges> {
         let db = self.db.lock();
         let tx = db.unchecked_transaction()?;
-        let result = api::remove(&tx, ext_id, keys)?;
+        let result = api::remove(&tx, ext_id.as_str(), keys)?;
         tx.commit()?;
         Ok(result)
     }
@@ -109,10 +109,10 @@ impl Store {
     /// Deletes all key-value pairs for the extension. As with `remove`, returns
     /// a list of changes, where each change contains the old value for each
     /// deleted key.
-    pub fn clear(&self, ext_id: &str) -> Result<StorageChanges> {
+    pub fn clear(&self, ext_id: String) -> Result<StorageChanges> {
         let db = self.db.lock();
         let tx = db.unchecked_transaction()?;
-        let result = api::clear(&tx, ext_id)?;
+        let result = api::clear(&tx, ext_id.as_str())?;
         tx.commit()?;
         Ok(result)
     }
@@ -153,7 +153,7 @@ impl Store {
                 // connections, and the next rusqlite version will not panic anyway.
                 // So this-is-fine.jpg
                 log::warn!("Attempting to close a store while other DB references exist.");
-                return Err(ErrorKind::OtherConnectionReferencesExist.into());
+                return Err(Error::OtherConnectionReferencesExist);
             }
         };
         // consume the mutex and get back the inner.
@@ -207,11 +207,11 @@ pub mod test {
     fn test_send() {
         fn ensure_send<T: Send>() {}
         // Compile will fail if not send.
-        ensure_send::<Store>();
+        ensure_send::<WebExtStorageStore>();
     }
 
-    pub fn new_mem_store() -> Store {
-        Store {
+    pub fn new_mem_store() -> WebExtStorageStore {
+        WebExtStorageStore {
             db: Arc::new(ThreadSafeStorageDb::new(crate::db::test::new_mem_db())),
         }
     }
