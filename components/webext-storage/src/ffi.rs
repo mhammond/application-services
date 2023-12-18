@@ -9,7 +9,7 @@
 /// a trait in `ffi_support` for a type in `webext_storage`).
 use ffi_support::{ErrorCode, ExternError};
 
-use crate::error::{Error, QuotaReason};
+use crate::error::WebExtStorageApiError;
 
 mod error_codes {
     /// An unexpected error occurred which likely cannot be meaningfully handled
@@ -32,13 +32,16 @@ mod error_codes {
     pub const QUOTA_MAX_ITEMS_EXCEEDED: i32 = 32 + 2;
 }
 
-impl From<Error> for ExternError {
-    fn from(err: Error) -> ExternError {
-        let code = ErrorCode::new(match err {
-            Error::JsonError(_) => error_codes::INVALID_JSON,
-            Error::QuotaError(QuotaReason::TotalBytes) => error_codes::QUOTA_TOTAL_BYTES_EXCEEDED,
-            Error::QuotaError(QuotaReason::ItemBytes) => error_codes::QUOTA_ITEM_BYTES_EXCEEDED,
-            Error::QuotaError(QuotaReason::MaxItems) => error_codes::QUOTA_MAX_ITEMS_EXCEEDED,
+impl From<WebExtStorageApiError> for ExternError {
+    fn from(err: WebExtStorageApiError) -> ExternError {
+        let code = ErrorCode::new(match &err {
+            WebExtStorageApiError::JsonError { reason: _ } => error_codes::INVALID_JSON,
+            WebExtStorageApiError::QuotaError { reason } => match reason.as_str() {
+                "ItemBytes" => error_codes::QUOTA_ITEM_BYTES_EXCEEDED,
+                "MaxItems" => error_codes::QUOTA_MAX_ITEMS_EXCEEDED,
+                "TotalBytes" => error_codes::QUOTA_TOTAL_BYTES_EXCEEDED,
+                _ => error_codes::UNEXPECTED,
+            },
             _ => error_codes::UNEXPECTED,
         });
         ExternError::new_error(code, err.to_string())

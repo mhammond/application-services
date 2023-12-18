@@ -35,7 +35,7 @@ pub struct WebExtStorageStore {
 impl WebExtStorageStore {
     /// Creates a store backed by a database at `db_path`. The path can be a
     /// file path or `file:` URI.
-    pub fn new(db_path: impl AsRef<Path>) -> Result<Self> {
+    pub fn new(db_path: impl AsRef<Path>) -> ApiResult<Self> {
         let db = StorageDb::new(db_path)?;
         Ok(Self {
             db: Arc::new(ThreadSafeStorageDb::new(db)),
@@ -58,10 +58,10 @@ impl WebExtStorageStore {
 
     /// Sets one or more JSON key-value pairs for an extension ID. Returns a
     /// list of changes, with existing and new values for each key in `val`.
-    pub fn set(&self, ext_id: String, val: JsonValue) -> Result<StorageChanges> {
+    pub fn set(&self, ext_id: &str, val: JsonValue) -> ApiResult<StorageChanges> {
         let db = self.db.lock();
-        let tx = db.unchecked_transaction()?;
-        let result = api::set(&tx, ext_id.as_str(), val)?;
+        let tx = db.unchecked_transaction().map_err(rusqlite::Error::from)?;
+        let result = api::set(&tx, ext_id, val)?;
         tx.commit()?;
         Ok(result)
     }
@@ -88,20 +88,20 @@ impl WebExtStorageStore {
     ///
     /// This method always returns an object (that is, a
     /// `serde_json::Value::Object`).
-    pub fn get(&self, ext_id: String, keys: JsonValue) -> Result<JsonValue> {
+    pub fn get(&self, ext_id: &str, keys: JsonValue) -> ApiResult<JsonValue> {
         // Don't care about transactions here.
         let db = self.db.lock();
-        api::get(&db, ext_id.as_str(), keys)
+        api::get(&db, ext_id, keys).map_err(WebExtStorageApiError::from)
     }
 
     /// Deletes the values for one or more keys. As with `get`, `keys` can be
     /// either a single string key, or an array of string keys. Returns a list
     /// of changes, where each change contains the old value for each deleted
     /// key.
-    pub fn remove(&self, ext_id: String, keys: JsonValue) -> Result<StorageChanges> {
+    pub fn remove(&self, ext_id: &str, keys: JsonValue) -> ApiResult<StorageChanges> {
         let db = self.db.lock();
         let tx = db.unchecked_transaction()?;
-        let result = api::remove(&tx, ext_id.as_str(), keys)?;
+        let result = api::remove(&tx, ext_id, keys)?;
         tx.commit()?;
         Ok(result)
     }
@@ -109,10 +109,10 @@ impl WebExtStorageStore {
     /// Deletes all key-value pairs for the extension. As with `remove`, returns
     /// a list of changes, where each change contains the old value for each
     /// deleted key.
-    pub fn clear(&self, ext_id: String) -> Result<StorageChanges> {
+    pub fn clear(&self, ext_id: &str) -> ApiResult<StorageChanges> {
         let db = self.db.lock();
         let tx = db.unchecked_transaction()?;
-        let result = api::clear(&tx, ext_id.as_str())?;
+        let result = api::clear(&tx, ext_id)?;
         tx.commit()?;
         Ok(result)
     }

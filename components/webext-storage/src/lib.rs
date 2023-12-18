@@ -23,7 +23,7 @@ pub use api::SYNC_MAX_ITEMS;
 pub use api::SYNC_QUOTA_BYTES;
 pub use api::SYNC_QUOTA_BYTES_PER_ITEM;
 
-pub use crate::error::Error as WebExtStorageError;
+pub use crate::error::WebExtStorageApiError;
 pub use crate::store::WebExtStorageStore;
 pub use api::UsageInfo;
 pub use api::{StorageChanges, StorageValueChange};
