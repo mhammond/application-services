@@ -6,9 +6,9 @@ use error_support::{ErrorHandling, GetErrorHandling};
 use interrupt_support::Interrupted;
 use std::fmt;
 
-/// Result enum for the public interface
-pub type ApiResult<T> = std::result::Result<T, WebExtStorageApiError>;
-/// Result enum for internal functions
+/// Result enum used by all implementation functions in this crate.
+/// These will be automagically turned into `WebExtStorageApiError` at the
+/// FFI layer.
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone, Copy)]
@@ -37,7 +37,7 @@ pub enum WebExtStorageApiError {
     JsonError { reason: String },
 
     #[error("Quota exceeded: {reason}")]
-    QuotaError { reason: String },
+    QuotaError { reason: QuotaReason },
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -94,78 +94,18 @@ impl GetErrorHandling for Error {
 
     fn get_error_handling(&self) -> ErrorHandling<Self::ExternalError> {
         match self {
-            Error::QuotaError(r) => ErrorHandling::convert(WebExtStorageApiError::QuotaError {
-                reason: r.to_string(),
-            })
-            .report_error("webext-storage-quota-error"),
+            Error::QuotaError(reason) => {
+                ErrorHandling::convert(WebExtStorageApiError::QuotaError { reason: *reason })
+                    .report_error("webext-storage-quota-error")
+            }
             Error::JsonError(e) => ErrorHandling::convert(WebExtStorageApiError::JsonError {
                 reason: e.to_string(),
             })
             .report_error("webext-storage-json-error"),
-            Error::OpenDatabaseError(e) => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: e.to_string(),
-                })
-                .report_error("webext-storage-open-db-error")
-            }
-            Error::Utf8Error(e) => ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
+            _ => ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
+                reason: self.to_string(),
             })
-            .report_error("webext-storage-utf8-error"),
-            Error::IllegalDatabasePath(path) => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: format!("Path not found: {}", path.to_string_lossy()),
-                })
-                .report_error("webext-storage-illegal-db-path-error")
-            }
-            Error::WrongApiForClose => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: "WrongApiForClose".to_string(),
-                })
-                .report_error("webext-storage-wrong-close-error")
-            }
-            Error::IoError(e) => ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            })
-            .report_error("webext-storage-io-error"),
-            Error::SqlError(e) => ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            })
-            .report_error("webext-storage-sql-error"),
-            Error::ConnectionAlreadyOpen => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: "ConnectionAlreadyOpen".to_string(),
-                })
-                .report_error("webext-storage-connection-already-open")
-            }
-            Error::InvalidConnectionType => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: "InvalidConnectionType".to_string(),
-                })
-                .report_error("webext-storage-invalid-connection-type")
-            }
-            Error::OtherConnectionReferencesExist => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: "OtherConnectionReferencesExist".to_string(),
-                })
-                .report_error("webext-storage-other-connection-exists")
-            }
-            Error::DatabaseConnectionClosed => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: "DatabaseConnectionClosed".to_string(),
-                })
-                .report_error("webext-storage-db-connection-closed")
-            }
-            Error::InterruptedError(e) => {
-                ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                    reason: e.to_string(),
-                })
-                .report_error("webext-storage-interrupted-error")
-            }
-            Error::SyncError(e) => ErrorHandling::convert(WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            })
-            .report_error("webext-storage-sync-error"),
+            .report_error("webext-storage-unexpected-error"),
         }
     }
 }
@@ -173,53 +113,12 @@ impl GetErrorHandling for Error {
 impl From<Error> for WebExtStorageApiError {
     fn from(err: Error) -> WebExtStorageApiError {
         match err {
-            Error::JsonError(e) => WebExtStorageApiError::JsonError {
-                reason: e.to_string(),
+            Error::JsonError(err) => WebExtStorageApiError::JsonError {
+                reason: err.to_string(),
             },
-            Error::QuotaError(QuotaReason::TotalBytes) => WebExtStorageApiError::QuotaError {
-                reason: QuotaReason::TotalBytes.to_string(),
-            },
-            Error::QuotaError(QuotaReason::ItemBytes) => WebExtStorageApiError::QuotaError {
-                reason: QuotaReason::ItemBytes.to_string(),
-            },
-            Error::QuotaError(QuotaReason::MaxItems) => WebExtStorageApiError::QuotaError {
-                reason: QuotaReason::MaxItems.to_string(),
-            },
-            Error::OpenDatabaseError(e) => WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            },
-            Error::Utf8Error(e) => WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            },
-            Error::IllegalDatabasePath(p) => WebExtStorageApiError::UnexpectedError {
-                reason: format!("Path not found: {}", p.to_string_lossy()),
-            },
-            Error::WrongApiForClose => WebExtStorageApiError::UnexpectedError {
-                reason: "WrongApiForClose".to_string(),
-            },
-            Error::IoError(e) => WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            },
-            Error::SqlError(e) => WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            },
-            Error::ConnectionAlreadyOpen => WebExtStorageApiError::UnexpectedError {
-                reason: "ConnectionAlreadyOpen".to_string(),
-            },
-            Error::InvalidConnectionType => WebExtStorageApiError::UnexpectedError {
-                reason: "InvalidConnectionType".to_string(),
-            },
-            Error::OtherConnectionReferencesExist => WebExtStorageApiError::UnexpectedError {
-                reason: "OtherConnectionReferencesExist".to_string(),
-            },
-            Error::DatabaseConnectionClosed => WebExtStorageApiError::UnexpectedError {
-                reason: "DatabaseConnectionClosed".to_string(),
-            },
-            Error::InterruptedError(e) => WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
-            },
-            Error::SyncError(e) => WebExtStorageApiError::UnexpectedError {
-                reason: e.to_string(),
+            Error::QuotaError(reason) => WebExtStorageApiError::QuotaError { reason },
+            _ => WebExtStorageApiError::UnexpectedError {
+                reason: err.to_string(),
             },
         }
     }

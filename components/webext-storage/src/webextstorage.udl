@@ -9,11 +9,17 @@ namespace webextstorage {
 
 };
 
+enum QuotaReason {
+    "TotalBytes",
+    "ItemBytes",
+    "MaxItems",
+};
+
 [Error]
 interface WebExtStorageApiError {
     UnexpectedError(string reason);
     JsonError(string reason);
-    QuotaError(string reason);
+    QuotaError(QuotaReason reason);
 };
 
 dictionary StorageValueChange {
