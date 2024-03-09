@@ -27,7 +27,7 @@ pub(super) fn common_stage_incoming_records(
     incoming: Vec<(Guid, String, ServerTimestamp)>,
     signal: &dyn Interruptee,
 ) -> Result<()> {
-    log::info!(
+    tracing::info!(
         "staging {} incoming records into {}",
         incoming.len(),
         table_name
@@ -57,7 +57,7 @@ pub(super) fn common_stage_incoming_records(
             Ok(())
         },
     )?;
-    log::trace!("staged");
+    tracing::trace!("staged");
     Ok(())
 }
 
@@ -202,7 +202,7 @@ fn get_outgoing_records(
         .query_map([], |row| Ok(record_from_data_row(row)))?
         .map(|r| {
             r.unwrap().map_err(|e| {
-                log::error!(
+                tracing::error!(
                     "Failed to retrieve a record from a row with the following error: {}",
                     e
                 );

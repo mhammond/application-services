@@ -228,7 +228,7 @@ impl<T: SyncRecord + std::fmt::Debug> SyncEngine for ConfigSyncEngine<T> {
     }
 
     fn wipe(&self) -> anyhow::Result<()> {
-        log::warn!("not implemented as there isn't a valid use case for it");
+        tracing::warn!("not implemented as there isn't a valid use case for it");
         Ok(())
     }
 }
