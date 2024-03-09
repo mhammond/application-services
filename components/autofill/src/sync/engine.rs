@@ -14,6 +14,7 @@ use sync15::bso::{IncomingBso, OutgoingBso};
 use sync15::engine::{CollSyncIds, CollectionRequest, EngineSyncAssociation, SyncEngine};
 use sync15::{telemetry, CollectionName, ServerTimestamp};
 use sync_guid::Guid;
+use tracing::warn;
 
 // We have 2 engines in this crate and they are identical except for stuff
 // abstracted here!
@@ -228,7 +229,7 @@ impl<T: SyncRecord + std::fmt::Debug> SyncEngine for ConfigSyncEngine<T> {
     }
 
     fn wipe(&self) -> anyhow::Result<()> {
-        log::warn!("not implemented as there isn't a valid use case for it");
+        warn!("not implemented as there isn't a valid use case for it");
         Ok(())
     }
 }

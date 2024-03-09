@@ -14,7 +14,6 @@ error-support = { path = "../support/error" }
 interrupt-support = { path = "../support/interrupt" }
 jwcrypto = { path = "../support/jwcrypto" }
 lazy_static = "1.4"
-log = "0.4"
 rusqlite = { version = "0.31.0", features = ["functions", "bundled", "serde_json", "unlock_notify"] }
 serde = "1"
 serde_derive = "1"
@@ -23,12 +22,13 @@ sql-support = { path = "../support/sql" }
 sync-guid = { path = "../support/guid", features = ["rusqlite_support", "random", "serde_support"] }
 sync15 = { path = "../sync15", features = ["sync-engine"] }
 thiserror = "1.0"
+tracing = "0.1"
 types = { path = "../support/types" }
 uniffi = { version = "0.28.2" }
 url = { version = "2.2", features = ["serde"] }
 
 [dev-dependencies]
-env_logger = { version = "0.10", default-features = false }
+tracing-support = { path = "../support/tracing", features=["testing"] }
 libsqlite3-sys = { version = "0.28.0" }
 
 [build-dependencies]

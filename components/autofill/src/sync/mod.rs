@@ -238,7 +238,7 @@ fn plan_incoming<T: std::fmt::Debug + SyncRecord>(
     tx: &Transaction<'_>,
     staged_info: IncomingState<T>,
 ) -> Result<IncomingAction<T>> {
-    log::trace!("plan_incoming: {:?}", staged_info);
+    tracing::trace!("plan_incoming: {:?}", staged_info);
     let IncomingState {
         incoming,
         local,
@@ -347,11 +347,11 @@ fn plan_incoming<T: std::fmt::Debug + SyncRecord>(
             }
         }
         IncomingKind::Malformed => {
-            log::warn!("skipping incoming record: {}", incoming.envelope.id);
+            tracing::warn!("skipping incoming record: {}", incoming.envelope.id);
             IncomingAction::DoNothing
         }
     };
-    log::trace!("plan_incoming resulted in {:?}", state);
+    tracing::trace!("plan_incoming resulted in {:?}", state);
     Ok(state)
 }
 
@@ -361,7 +361,7 @@ fn apply_incoming_action<T: std::fmt::Debug + SyncRecord>(
     tx: &Transaction<'_>,
     action: IncomingAction<T>,
 ) -> Result<()> {
-    log::trace!("applying action: {:?}", action);
+    tracing::trace!("applying action: {:?}", action);
     match action {
         IncomingAction::Update { record, was_merged } => {
             rec_impl.update_local_record(tx, record, was_merged)?;
@@ -413,7 +413,7 @@ pub mod test {
     use crate::db::{schema::create_empty_sync_temp_tables, test::new_mem_db, AutofillDb};
 
     pub fn new_syncable_mem_db() -> AutofillDb {
-        let _ = env_logger::try_init();
+        tracing_support::init_for_tests();
         let db = new_mem_db();
         create_empty_sync_temp_tables(&db).expect("should work");
         db

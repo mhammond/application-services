@@ -349,6 +349,7 @@ mod tests {
     use interrupt_support::NeverInterrupts;
     use serde_json::{json, Map, Value};
     use sql_support::ConnExt;
+    use tracing::info;
 
     impl InternalAddress {
         fn into_test_incoming_bso(self) -> IncomingBso {
@@ -425,7 +426,7 @@ mod tests {
 
     #[test]
     fn test_stage_incoming() -> Result<()> {
-        let _ = env_logger::try_init();
+        tracing_support::init_for_tests();
         let mut db = new_syncable_mem_db();
         struct TestCase {
             incoming_records: Vec<Value>,
@@ -467,7 +468,7 @@ mod tests {
         ];
 
         for tc in test_cases {
-            log::info!("starting new testcase");
+            info!("starting new testcase");
             let tx = db.transaction()?;
 
             // Add required items to the mirrors.
