@@ -10,6 +10,7 @@ exclude = ["/android", "/ios"]
 log = "0.4"
 parking_lot = ">=0.11,<=0.12"
 uniffi = { version = "0.28.2" }
+tracing-support = { path = "../tracing" }
 
 [build-dependencies]
 uniffi = { version = "0.28.2", features=["build"]}

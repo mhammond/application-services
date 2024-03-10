@@ -1,0 +1,29 @@
+namespace tracing_support {
+    void register_event_sink([ByRef] string target, Level level, EventSink sink);
+    void unregister_event_sink([ByRef] string target);
+};
+
+
+[Trait]
+interface EventSink {
+    void on_event(Event event);
+};
+
+enum Level {
+    "Error",
+    "Warn",
+    "Info",
+    "Debug",
+    "Trace",
+};
+
+[Custom]
+typedef string JsonValue;
+
+dictionary Event {
+    Level level;
+    string target;
+    string name;
+    string message;
+    JsonValue fields;
+};
