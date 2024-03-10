@@ -16,7 +16,6 @@ use rusqlite::{types::ToSql, Connection, Row};
 use sync15::bso::OutgoingBso;
 use sync15::ServerTimestamp;
 use sync_guid::Guid;
-use tracing::{error, info, trace};
 
 /// Stages incoming records (excluding incoming tombstones) in preparation for
 /// applying incoming changes for the syncing autofill records.
@@ -28,7 +27,7 @@ pub(super) fn common_stage_incoming_records(
     incoming: Vec<(Guid, String, ServerTimestamp)>,
     signal: &dyn Interruptee,
 ) -> Result<()> {
-    info!(
+    tracing::info!(
         "staging {} incoming records into {}",
         incoming.len(),
         table_name
@@ -58,7 +57,7 @@ pub(super) fn common_stage_incoming_records(
             Ok(())
         },
     )?;
-    trace!("staged");
+    tracing::trace!("staged");
     Ok(())
 }
 
@@ -203,7 +202,7 @@ fn get_outgoing_records(
         .query_map([], |row| Ok(record_from_data_row(row)))?
         .map(|r| {
             r.unwrap().map_err(|e| {
-                error!(
+                tracing::error!(
                     "Failed to retrieve a record from a row with the following error: {}",
                     e
                 );
