@@ -12,7 +12,7 @@ pub use foreign_logger::{AppServicesLogger, Level, Record};
 static HAVE_SET_MAX_LEVEL: AtomicBool = AtomicBool::new(false);
 
 // The "targets" (in practice, crate names) which are hooked up to the `tracing` crate for logging.
-static TRACING_TARGETS: &'static [&'static str] = &["autofill"];
+static TRACING_TARGETS: &'static [&'static str] = &["autofill", "tabs"];
 
 /// Set the logger to forward to.
 ///
