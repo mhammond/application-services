@@ -279,7 +279,7 @@ impl TabsStorage {
                 // so we really should consider just dropping it? (Sadly though, it does seem
                 // possible it's actually a very recently connected client, so we keep it)
                 // We should get rid of this eventually - https://github.com/mozilla/application-services/issues/5199
-                log::info!(
+                tracing::info!(
                     "Storing tabs from a client that doesn't appear in the devices list: {}",
                     id,
                 );
@@ -375,7 +375,7 @@ impl TabsStorage {
                             ":ttl": client_ttl_ms,
                         },
                     )?;
-                    log::info!(
+                    tracing::info!(
                         "removed {} stale clients (threshold was {})",
                         num_removed,
                         last_sync - client_ttl_ms
@@ -401,7 +401,7 @@ impl TabsStorage {
         for remote_tab in new_remote_tabs {
             let record = &remote_tab.0;
             let last_modified = remote_tab.1;
-            log::info!(
+            tracing::info!(
                 "inserting tab for device {}, last modified at {}",
                 record.id,
                 last_modified.as_millis()
