@@ -23,6 +23,7 @@ static SINKS_BY_TARGET: Lazy<RwLock<HashMap<String, LogEntry>>> = Lazy::new(|| {
 });
 
 pub fn register_event_sink(target: &str, level: crate::Level, sink: Arc<dyn EventSink>) {
+    println!("REGISTER {target}");
     SINKS_BY_TARGET.write().insert(
         target.to_string(),
         LogEntry {
@@ -48,7 +49,12 @@ where
         _ctx: tracing_subscriber::layer::Context<'_, S>,
     ) {
         let target = event.metadata().target();
-        if let Some(entry) = SINKS_BY_TARGET.read().get(target) {
+        let prefix = match target.find(':') {
+            Some(index) => &target[..index],
+            None => target,
+        };
+        println!("TRACING EVENT {target} - {prefix} - {}", SINKS_BY_TARGET.read().len());
+        if let Some(entry) = SINKS_BY_TARGET.read().get(prefix) {
             let level = *event.metadata().level();
             if level <= entry.level {
                 let mut fields = BTreeMap::new();
