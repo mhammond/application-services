@@ -289,9 +289,9 @@ impl SyncEngine for TabsEngine {
 
     fn wipe(&self) -> Result<()> {
         self.reset(&EngineSyncAssociation::Disconnected)?;
-        // not clear why we need to wipe the local tabs - the app is just going
-        // to re-add them?
-        self.store.storage.lock().unwrap().wipe_local_tabs();
+        // We don't want to wipe the local tabs, because this `reset()` might be called at the
+        // as part of a sync without the knowledge of the app - so it might never again
+        // tell us what the tabs are, meaning we fail to upload the current tabs.
         Ok(())
     }
 

@@ -387,10 +387,6 @@ impl TabsStorage {
         Ok(())
     }
 
-    pub(crate) fn wipe_local_tabs(&self) {
-        self.local_tabs.replace(None);
-    }
-
     pub(crate) fn put_meta(&mut self, key: &str, value: &dyn ToSql) -> Result<()> {
         let db = self.open_or_create()?;
         db.execute_cached(

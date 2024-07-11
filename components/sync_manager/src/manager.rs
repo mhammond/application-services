@@ -49,16 +49,28 @@ impl SyncManager {
         Ok(())
     }
 
+    // never throws, should drop the result!
     pub fn reset(&self, engine_name: &str) -> Result<()> {
         if let Some(engine) = Self::get_engine(&Self::get_engine_id(engine_name)?) {
-            engine.reset(&EngineSyncAssociation::Disconnected)?;
+            log::info!("resetting {engine_name}");
+            if let Err(e) = engine.reset(&EngineSyncAssociation::Disconnected) {
+                error_support::report_error!(
+                    "sync-manager-reset",
+                    "Failed to reset {engine_name}: {e}",
+                );
+            }
+        } else {
+            log::warn!("Can't reset unregistered engine {engine_name}");
         }
         Ok(())
     }
 
     pub fn reset_all(&self) -> Result<()> {
-        for (_, engine) in self.iter_registered_engines() {
-            engine.reset(&EngineSyncAssociation::Disconnected)?;
+        for (id, engine) in self.iter_registered_engines() {
+            log::info!("reset_all resetting {}", engine.collection_name());
+            if let Err(e) = engine.reset(&EngineSyncAssociation::Disconnected) {
+                error_support::report_error!("sync-manager-reset-all", "Failed to reset {id}: {e}",);
+            }
         }
         Ok(())
     }
@@ -67,18 +79,7 @@ impl SyncManager {
     pub fn disconnect(&self) {
         breadcrumb!("SyncManager disconnect()");
         for engine_id in SyncEngineId::iter() {
-            if let Some(engine) = Self::get_engine(&engine_id) {
-                if let Err(e) = engine.reset(&EngineSyncAssociation::Disconnected) {
-                    error_support::report_error!(
-                        "sync-manager-reset",
-                        "Failed to reset {}: {}",
-                        engine_id,
-                        e
-                    );
-                }
-            } else {
-                log::warn!("Unable to reset {}, be sure to call register_with_sync_manager before disconnect if this is surprising", engine_id);
-            }
+            let _ = self.reset(engine_id.name());
         }
     }
 
