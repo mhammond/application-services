@@ -1,4 +1,8 @@
-# v140.0 (In progress)
+# v141.0 (In progress)
+
+[Full Changelog](In progress)
+
+# v140.0 (_2025-05-23_)
 
 ## ⚠️ Breaking Changes ⚠️
 
@@ -11,7 +15,7 @@
 
 #### BREAKING CHANGE
 - Removed `Megazord.kt` and moved the contents to the new `RustComponentsInitializer.kt`.
-- 
+
 ## 🦊 What's Changed 🦊
 
 ### Remote Settings
@@ -24,6 +28,9 @@
   - `fn add_many(&self, entries: Vec<LoginEntry>)`: add multiple logins with single transaction
   - `fn add_many_with_records(&self, entries_with_records: Vec<LoginEntryWithRecordFields>)`: add multiple logins with metadata within single transaction
 
+### Glean
+- Updated to v64.3.1 ([#6755](https://github.com/mozilla/application-services/pull/6755)/[#6762](https://github.com/mozilla/application-services/pull/6762))
+- Reverted the JNA dependency version back to 5.14.0 due Android 5/6 crashes. ([#6762](https://github.com/mozilla/application-services/pull/6762))
 
 ## 🔧 What's Fixed 🔧
 
@@ -36,12 +43,7 @@
 - The `SearchEngineSelector::filter_engine_configuration` will now sort any
   unordered engines by name rather than identifier.
 
-## 🦊 What's Changed 🦊
-
-### Glean
-- Updated to v64.2.0 ([#6755](https://github.com/mozilla/application-services/pull/6755))
-
-[Full Changelog](In progress)
+[Full Changelog](https://github.com/mozilla/application-services/compare/v139.0...v140.0)
 
 # v139.0 (_2025-04-28_)
 
