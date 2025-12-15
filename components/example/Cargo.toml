@@ -12,7 +12,7 @@ license = "MPL-2.0"
 [dependencies]
 # UniFFI is a dependency for any shared Rust component, make the version match what the other
 # components are using.
-uniffi = { version = "0.29.0" }
+uniffi = { git = "https://github.com/mozilla/uniffi-rs", rev = "5897c6f07068182dc09869fc1810264d17516f16" }
 # app-services support crates that you probably want to use.
 error-support = { path = "../support/error" }
 interrupt-support = { path = "../support/interrupt" }

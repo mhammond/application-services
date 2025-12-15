@@ -6,8 +6,8 @@ edition = "2021"
 license = "MPL-2.0"
 
 [dependencies]
-uniffi = { version = "0.29.3", features = ["cli"] }
-uniffi_bindgen = { version = "0.29.3" }
+uniffi = { git = "https://github.com/mozilla/uniffi-rs", rev = "5897c6f07068182dc09869fc1810264d17516f16", features = ["cli"] }
+uniffi_bindgen = { git = "https://github.com/mozilla/uniffi-rs", rev = "5897c6f07068182dc09869fc1810264d17516f16" }
 clap = {version = "4.2", default-features = false, features = ["std", "derive"]}
 cargo_metadata = "0.19"
 camino = "1"

@@ -12,6 +12,6 @@ keydb = ["nss/keydb"]
 ohttp = ["dep:viaduct", "viaduct/ohttp"]
 
 [dependencies]
-uniffi = { version = "0.29.0" }
+uniffi = { git = "https://github.com/mozilla/uniffi-rs", rev = "5897c6f07068182dc09869fc1810264d17516f16" }
 nss = { path = "../support/rc_crypto/nss" }
 viaduct = { path = "../viaduct", optional = true }

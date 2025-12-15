@@ -15,5 +15,5 @@ glob = "0.3"
 toml = "0.5"
 clap = {version = "4.2", default-features = false, features = ["std", "derive"]}
 serde = { version = "1", features = ["derive"] }
-uniffi_bindgen = { version = "0.29.3" }
-uniffi_pipeline = { version = "0.29.3" }
+uniffi_bindgen = { git = "https://github.com/mozilla/uniffi-rs", rev = "5897c6f07068182dc09869fc1810264d17516f16" }
+uniffi_pipeline = { git = "https://github.com/mozilla/uniffi-rs", rev = "5897c6f07068182dc09869fc1810264d17516f16" }
