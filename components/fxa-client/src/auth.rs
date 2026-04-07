@@ -155,6 +155,59 @@ impl FirefoxAccount {
         self.internal.lock().complete_oauth_flow(code, state)
     }
 
+    /// Initiate an OAuth scope authorization flow for an already-connected account.
+    ///
+    /// Call this when the application needs to request additional scopes from a user who is
+    /// already signed in. It returns a URL at which the user may authorize the additional
+    /// scopes. The application should direct the user to that URL.
+    ///
+    /// Unlike [`begin_oauth_flow`](FirefoxAccount::begin_oauth_flow), if this flow fails or
+    /// is cancelled the user remains connected — they are not signed out.
+    ///
+    /// When the resulting flow redirects back to the configured `redirect_uri`, the query
+    /// parameters should be extracted from the URL and passed to
+    /// [`complete_oauth_scope_authorization_flow`](FirefoxAccount::complete_oauth_scope_authorization_flow)
+    /// to finalize the authorization.
+    ///
+    /// # Arguments
+    ///
+    ///   - `scopes` - list of additional OAuth scopes to request.
+    ///   - `entrypoint` - metrics identifier for the UX entrypoint.
+    #[handle_error(Error)]
+    pub fn begin_oauth_scope_authorization_flow<T: AsRef<str>>(
+        &self,
+        scopes: &[T],
+        entrypoint: &str,
+    ) -> ApiResult<String> {
+        let scopes = scopes.iter().map(T::as_ref).collect::<Vec<_>>();
+        self.internal
+            .lock()
+            .begin_oauth_scope_authorization_flow(&scopes, entrypoint)
+    }
+
+    /// Complete an OAuth scope authorization flow.
+    ///
+    /// **💾 This method alters the persisted account state.**
+    ///
+    /// At the conclusion of a scope authorization flow, the user will be redirected to the
+    /// application's registered `redirect_uri`. It should extract the `code` and `state`
+    /// parameters from the resulting URL and pass them to this method.
+    ///
+    /// # Arguments
+    ///
+    ///   - `code` - the OAuth authorization code obtained from the redirect URI.
+    ///   - `state` - the OAuth state parameter obtained from the redirect URI.
+    #[handle_error(Error)]
+    pub fn complete_oauth_scope_authorization_flow(
+        &self,
+        code: &str,
+        state: &str,
+    ) -> ApiResult<()> {
+        self.internal
+            .lock()
+            .complete_oauth_scope_authorization_flow(code, state)
+    }
+
     /// Check authorization status for this application.
     ///
     /// **💾 This method alters the persisted account state.**
@@ -236,8 +289,10 @@ pub enum FxaState {
     Uninitialized,
     /// User has not connected to FxA or has logged out
     Disconnected,
-    /// User is currently performing an OAuth flow
+    /// User is disconnected and currently performing an initial OAuth flow to authenticate this device.
     Authenticating { oauth_url: String },
+    /// User is connected and currently authorizing additional scopes.
+    Authorizing { oauth_url: String },
     /// User is currently connected to FxA
     Connected,
     /// User was connected to FxA, but we observed issues with the auth tokens.
@@ -290,8 +345,29 @@ pub enum FxaEvent {
     /// Use this to cancel an in-progress OAuth, returning to [FxaState::Disconnected] so the
     /// process can begin again.
     ///
-    /// This event is valid for the `Authenticating` state.
+    /// This event is valid for the `Authenticating` and `Authorizing` states.
     CancelOAuthFlow,
+    /// Begin an OAuth scope authorization flow for an already connected account.
+    ///
+    /// If successful, the state machine will transition to [FxaState::Authorizing].  The next
+    /// step is to navigate the user to the `oauth_url` and let them authorize the additional scopes.
+    ///
+    /// On failure or cancellation, the state machine returns to [FxaState::Connected].
+    ///
+    /// This event is valid for the `Connected` and `Authorizing` states.  If the state machine
+    /// is in the `Authorizing` state, then this will forget the current flow and start a new one.
+    BeginOAuthScopeAuthorizationFlow {
+        scopes: Vec<String>,
+        entrypoint: String,
+    },
+    /// Complete an OAuth scope authorization flow.
+    ///
+    /// Send this event after the user has navigated through the scope authorization flow and has
+    /// reached the redirect URI.  Extract `code` and `state` from the query parameters or web
+    /// channel.  The state machine will transition to [FxaState::Connected].
+    ///
+    /// This event is valid for the `Authorizing` state.
+    CompleteOAuthScopeAuthorizationFlow { code: String, state: String },
     /// Check the authorization status for a connected account.
     ///
     /// Send this when issues are detected with the auth tokens for a connected account.  It will

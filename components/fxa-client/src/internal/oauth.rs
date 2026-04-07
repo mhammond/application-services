@@ -12,7 +12,7 @@ use super::{
     util, FirefoxAccount,
 };
 use crate::auth::UserData;
-use crate::{warn, AuthorizationParameters, Error, FxaServer, Result, ScopedKey};
+use crate::{debug, info, warn, AuthorizationParameters, Error, FxaServer, Result, ScopedKey};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use jwcrypto::{EncryptionAlgorithm, EncryptionParameters};
 use rate_limiter::RateLimiter;
@@ -172,19 +172,15 @@ impl FirefoxAccount {
         self.oauth_flow(url, scopes)
     }
 
-    /// Initiate an OAuth login flow and return a URL that should be navigated to.
-    ///
-    /// * `scopes` - Space-separated list of requested scopes.
-    /// * `entrypoint` - The entrypoint to be used for metrics
-    /// * `metrics` - Optional metrics parameters
-    pub fn begin_oauth_flow(&mut self, scopes: &[&str], entrypoint: &str) -> Result<String> {
-        self.state.on_begin_oauth();
-        let mut url = if self.state.last_seen_profile().is_some() {
-            self.state.config().oauth_force_auth_url()?
-        } else {
-            self.state.config().authorization_endpoint()?
-        };
-
+    // We support oauth flows for an initial signin, and also to authorize additional scopes.
+    // This is code common between the 2.
+    fn begin_general_oauth_flow(
+        &mut self,
+        mut url: Url,
+        scopes: &[&str],
+        entrypoint: &str,
+    ) -> Result<String> {
+        info!("starting oauth flow via {url} for scopes={scopes:?}, entrypoint={entrypoint:?}");
         url.query_pairs_mut()
             .append_pair("action", "email")
             .append_pair("response_type", "code")
@@ -209,7 +205,42 @@ impl FirefoxAccount {
             None => scopes.iter().map(ToString::to_string).collect(),
         };
         let scopes: Vec<&str> = scopes.iter().map(<_>::as_ref).collect();
+        debug!("oauth flow final set of requested scopes now {scopes:?}");
         self.oauth_flow(url, &scopes)
+    }
+
+    /// Initiate an OAuth login flow and return a URL that should be navigated to.
+    ///
+    /// * `scopes` - Space-separated list of requested scopes.
+    /// * `entrypoint` - The entrypoint to be used for metrics
+    /// * `metrics` - Optional metrics parameters
+    pub fn begin_oauth_flow(&mut self, scopes: &[&str], entrypoint: &str) -> Result<String> {
+        self.state.on_begin_oauth();
+        let url = if self.state.last_seen_profile().is_some() {
+            self.state.config().oauth_force_auth_url()?
+        } else {
+            self.state.config().authorization_endpoint()?
+        };
+        self.begin_general_oauth_flow(url, scopes, entrypoint)
+    }
+
+    pub fn begin_oauth_scope_authorization_flow(
+        &mut self,
+        scopes: &[&str],
+        entrypoint: &str,
+    ) -> Result<String> {
+        // We do not want to kill our refresh token or access tokens in this flow.
+        let url = self.state.config().authorization_endpoint()?;
+        self.begin_general_oauth_flow(url, scopes, entrypoint)
+    }
+
+    pub fn complete_oauth_scope_authorization_flow(
+        &mut self,
+        code: &str,
+        state: &str,
+    ) -> Result<()> {
+        // `complete_oauth_flow` already handles everything we need.
+        self.complete_oauth_flow(code, state)
     }
 
     /// Fetch an OAuth code for a particular client using a session token from the account state.

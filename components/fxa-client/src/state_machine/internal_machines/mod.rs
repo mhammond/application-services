@@ -6,6 +6,7 @@
 
 mod auth_issues;
 mod authenticating;
+mod authorizing;
 mod connected;
 mod disconnected;
 mod uninitialized;
@@ -16,6 +17,7 @@ use crate::{
 };
 pub use auth_issues::AuthIssuesStateMachine;
 pub use authenticating::AuthenticatingStateMachine;
+pub use authorizing::AuthorizingStateMachine;
 pub use connected::ConnectedStateMachine;
 pub use disconnected::DisconnectedStateMachine;
 use error_support::convert_log_report_error;
@@ -48,6 +50,14 @@ pub enum State {
         entrypoint: String,
     },
     CompleteOAuthFlow {
+        code: String,
+        state: String,
+    },
+    BeginOAuthScopeAuthorizationFlow {
+        scopes: Vec<String>,
+        entrypoint: String,
+    },
+    CompleteOAuthScopeAuthorizationFlow {
         code: String,
         state: String,
     },
@@ -142,6 +152,17 @@ impl State {
             }
             State::CompleteOAuthFlow { code, state } => {
                 account.complete_oauth_flow(code, state)?;
+                Event::CompleteOAuthFlowSuccess
+            }
+            State::BeginOAuthScopeAuthorizationFlow { scopes, entrypoint } => {
+                account.cancel_existing_oauth_flows();
+                let scopes: Vec<&str> = scopes.iter().map(String::as_str).collect();
+                let oauth_url =
+                    account.begin_oauth_scope_authorization_flow(&scopes, entrypoint)?;
+                Event::BeginOAuthFlowSuccess { oauth_url }
+            }
+            State::CompleteOAuthScopeAuthorizationFlow { code, state } => {
+                account.complete_oauth_scope_authorization_flow(code, state)?;
                 Event::CompleteOAuthFlowSuccess
             }
             State::InitializeDevice => {

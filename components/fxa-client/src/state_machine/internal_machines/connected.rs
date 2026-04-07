@@ -18,6 +18,9 @@ impl InternalStateMachine for ConnectedStateMachine {
             FxaEvent::Disconnect => Ok(Disconnect),
             FxaEvent::CheckAuthorizationStatus => Ok(CheckAuthorizationStatus),
             FxaEvent::CallGetProfile => Ok(GetProfile),
+            FxaEvent::BeginOAuthScopeAuthorizationFlow { scopes, entrypoint } => {
+                Ok(BeginOAuthScopeAuthorizationFlow { scopes, entrypoint })
+            }
             e => Err(Error::InvalidStateTransition(format!("Connected -> {e}"))),
         }
     }
@@ -41,6 +44,10 @@ impl InternalStateMachine for ConnectedStateMachine {
             (GetProfile, GetProfileSuccess) => Complete(FxaState::Connected),
             (GetProfile, CallError) => Complete(FxaState::AuthIssues),
             (CheckAuthorizationStatus, CallError) => Complete(FxaState::AuthIssues),
+            (BeginOAuthScopeAuthorizationFlow { .. }, BeginOAuthFlowSuccess { oauth_url }) => {
+                Complete(FxaState::Authorizing { oauth_url })
+            }
+            (BeginOAuthScopeAuthorizationFlow { .. }, CallError) => Cancel,
             (state, event) => return invalid_transition(state, event),
         })
     }

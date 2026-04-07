@@ -19,6 +19,7 @@ impl fmt::Display for FxaState {
             Self::Uninitialized => "Uninitialized",
             Self::Disconnected => "Disconnected",
             Self::Authenticating { .. } => "Athenticating",
+            Self::Authorizing { .. } => "Athorizing",
             Self::Connected => "Connected",
             Self::AuthIssues => "AthIssues",
         };
@@ -34,6 +35,8 @@ impl fmt::Display for FxaEvent {
             Self::BeginPairingFlow { .. } => "BeginPairingFlow",
             Self::CompleteOAuthFlow { .. } => "CompleteOAthFlow",
             Self::CancelOAuthFlow => "CancelOAthFlow",
+            Self::BeginOAuthScopeAuthorizationFlow { .. } => "BeginOAthScopeAthorizationFlow",
+            Self::CompleteOAuthScopeAuthorizationFlow { .. } => "CompleteOAthScopeAthorizationFlow",
             Self::CheckAuthorizationStatus => "CheckAuthorizationStatus",
             Self::Disconnect => "Disconnect",
             Self::CallGetProfile => "CallGetProfile",
@@ -49,6 +52,12 @@ impl fmt::Display for internal_machines::State {
             Self::BeginOAuthFlow { .. } => write!(f, "BeginOAthFlow"),
             Self::BeginPairingFlow { .. } => write!(f, "BeginPairingFlow"),
             Self::CompleteOAuthFlow { .. } => write!(f, "CompleteOAthFlow"),
+            Self::BeginOAuthScopeAuthorizationFlow { .. } => {
+                write!(f, "BeginOAthScopeAthorizationFlow")
+            }
+            Self::CompleteOAuthScopeAuthorizationFlow { .. } => {
+                write!(f, "CompleteOAthScopeAthorizationFlow")
+            }
             Self::InitializeDevice => write!(f, "InitializeDevice"),
             Self::EnsureDeviceCapabilities => write!(f, "EnsureDeviceCapabilities"),
             Self::CheckAuthorizationStatus => write!(f, "CheckAuthorizationStatus"),

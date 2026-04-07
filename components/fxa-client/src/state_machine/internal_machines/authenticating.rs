@@ -146,6 +146,18 @@ mod test {
         );
     }
 
+    #[test]
+    fn test_begin_oauth_scope_authorization_flow_is_invalid() {
+        // Scope authorization requires an already-connected account; it is not valid from
+        // the Authenticating state where the user has not yet completed sign-in.
+        let result =
+            AuthenticatingStateMachine.initial_state(FxaEvent::BeginOAuthScopeAuthorizationFlow {
+                scopes: vec!["profile".to_owned()],
+                entrypoint: "test-entrypoint".to_owned(),
+            });
+        assert!(result.is_err());
+    }
+
     /// Same as `test_begin_oauth_flow`, but for a paring flow
     #[test]
     fn test_begin_pairing_flow() {

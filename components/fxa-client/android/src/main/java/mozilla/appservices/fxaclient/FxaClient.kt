@@ -161,6 +161,30 @@ class FxaClient(inner: FirefoxAccount, persistCallback: PersistCallback?) : Auto
     }
 
     /**
+     * Constructs a URL used to begin an OAuth scope authorization flow for an already-connected
+     * account, to authorize additional scopes without risking disconnection.
+     *
+     * This performs network requests, and should not be used on the main thread.
+     *
+     * @param scopes List of OAuth scopes for which the client wants access
+     * @param entrypoint to be used for metrics
+     * @return String URL to present to the user for authorization
+     */
+    fun beginOAuthScopeAuthorizationFlow(scopes: Array<String>, entrypoint: String): String {
+        return this.inner.beginOauthScopeAuthorizationFlow(scopes.toList(), entrypoint)
+    }
+
+    /**
+     * Completes an OAuth scope authorization flow initiated by [beginOAuthScopeAuthorizationFlow].
+     *
+     * This performs network requests, and should not be used on the main thread.
+     */
+    fun completeOAuthScopeAuthorizationFlow(code: String, state: String) {
+        this.inner.completeOauthScopeAuthorizationFlow(code, state)
+        this.tryPersistState()
+    }
+
+    /**
      * Fetches the profile object for the current client either from the existing cached account,
      * or from the server (requires the client to have access to the profile scope).
      *
