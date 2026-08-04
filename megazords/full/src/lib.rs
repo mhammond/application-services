@@ -25,6 +25,7 @@ pub use remote_settings;
 pub use rust_log_forwarder;
 pub use search;
 pub use suggest;
+pub use shared_settings;
 pub use sync_manager;
 pub use tabs;
 pub use tracing_support;

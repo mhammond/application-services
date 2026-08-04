@@ -77,6 +77,13 @@ projects:
     - name: push
       type: aar
     description: Low level WebPush handler implementation.
+  shared-settings:
+    path: components/shared-settings/android
+    artifactId: shared-settings
+    publications:
+    - name: shared-settings
+      type: aar
+    description: Settings shared between all platforms.
   sync15:
     path: components/sync15/android
     artifactId: sync15

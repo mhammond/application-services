@@ -53,6 +53,7 @@ members = [
     "components/support/url-macro/tests",
     "components/support/viaduct-dev",
     "components/support/viaduct-hyper",
+    "components/shared-settings",
     "components/sync_manager",
     "components/sync15",
     "components/tabs",

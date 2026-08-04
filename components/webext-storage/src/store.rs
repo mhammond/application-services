@@ -42,13 +42,10 @@ impl WebExtStorageStore {
         })
     }
 
-    /// Creates a store backed by an in-memory database.
-    #[cfg(test)]
-    pub fn new_memory(db_path: &str) -> Result<Self> {
-        let db = StorageDb::new_memory(db_path)?;
-        Ok(Self {
-            db: Arc::new(ThreadSafeStorageDb::new(db)),
-        })
+    /// Creates a store from a supplied Arc<ThreadSafeStorageDb>.
+    #[cfg(any(test, feature = "testing"))]
+    pub fn new_from_db(db: Arc<ThreadSafeStorageDb>) -> Self {
+        Self { db }
     }
 
     /// Returns an interrupt handle for this store.

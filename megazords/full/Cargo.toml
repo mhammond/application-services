@@ -27,6 +27,7 @@ crashtest = { path = "../../components/crashtest" }
 error-support = { path = "../../components/support/error" }
 suggest = { path = "../../components/suggest" }
 search = { path = "../../components/search" }
+shared-settings = { path = "../../components/shared-settings" }
 tracing-support = { path = "../../components/support/tracing" }
 
 lazy_static = "1.4"

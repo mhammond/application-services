@@ -29,6 +29,9 @@ pub use crate::sync::{bridge::WebExtStorageBridgedEngine, SyncedExtensionChange}
 pub use api::UsageInfo;
 pub use api::{StorageChanges, StorageValueChange};
 
+#[cfg(any(test, feature="testing"))]
+pub use db::test::new_mem_thread_safe_storage_db;
+
 uniffi::include_scaffolding!("webext-storage");
 
 use serde_json::Value as JsonValue;

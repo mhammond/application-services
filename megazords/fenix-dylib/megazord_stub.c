@@ -26,6 +26,7 @@ extern int MOZ_EXPORT ffi_rust_log_forwarder_uniffi_contract_version();
 extern int MOZ_EXPORT ffi_search_uniffi_contract_version();
 extern int MOZ_EXPORT ffi_suggest_uniffi_contract_version();
 extern int MOZ_EXPORT ffi_sync15_uniffi_contract_version();
+extern int MOZ_EXPORT ffi_shared_settings_uniffi_contract_version();
 extern int MOZ_EXPORT ffi_sync_manager_uniffi_contract_version();
 extern int MOZ_EXPORT ffi_tabs_uniffi_contract_version();
 
@@ -90,6 +91,7 @@ void _local_megazord_dummy_symbol() {
     ffi_search_uniffi_contract_version();
     ffi_suggest_uniffi_contract_version();
     ffi_sync15_uniffi_contract_version();
+    ffi_shared_settings_uniffi_contract_version();
     ffi_sync_manager_uniffi_contract_version();
     ffi_tabs_uniffi_contract_version();
     uniffi_search_checksum_constructor_searchengineselector_new();
