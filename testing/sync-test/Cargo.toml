@@ -13,6 +13,7 @@ logins = { path = "../../components/logins" }
 sync15 = { path = "../../components/sync15" }
 sync_manager = { path = "../../components/sync_manager" }
 restmail-client = { path = "../../components/support/restmail-client" }
+shared-settings = { path = "../../components/shared-settings" }
 tabs = { path = "../../components/tabs" }
 fxa-client = { path = "../../components/fxa-client" }
 sync-guid = { path = "../../components/support/guid", features = ["rusqlite_support", "random"]}

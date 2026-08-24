@@ -6,6 +6,10 @@ use serde_json::Value as JsonValue;
 use std::sync::Arc;
 use webext_storage::WebExtStorageStore;
 
+mod sync;
+
+pub use sync::get_registered_sync_engine;
+
 uniffi::custom_type!(JsonValue, String, {
     remote,
     try_lift: |val| Ok(serde_json::from_str(val.as_str())?),

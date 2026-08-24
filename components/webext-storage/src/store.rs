@@ -12,6 +12,8 @@ use std::sync::Arc;
 
 use interrupt_support::SqlInterruptHandle;
 use serde_json::Value as JsonValue;
+use sync15::engine::SyncEngine;
+use sync15::CollectionName;
 
 /// A store is used to access `storage.sync` data. It manages an underlying
 /// database connection, and exposes methods for reading and writing storage
@@ -51,6 +53,17 @@ impl WebExtStorageStore {
     /// Returns an interrupt handle for this store.
     pub fn interrupt_handle(&self) -> Arc<SqlInterruptHandle> {
         self.db.interrupt_handle()
+    }
+
+    /// Creates a `SyncEngine` for this store which syncs to `collection_name`.
+    /// Desktop doesn't use this (it goes via `bridged_engine()`); it exists for
+    /// components which wrap this store and reuse its storage format for a
+    /// collection of their own - eg, `shared-settings`.
+    pub fn create_sync_engine(&self, collection_name: CollectionName) -> Box<dyn SyncEngine> {
+        Box::new(crate::sync::engine::WebExtSyncEngine::new(
+            &self.db,
+            collection_name,
+        ))
     }
 
     /// Sets one or more JSON key-value pairs for an extension ID. Returns a

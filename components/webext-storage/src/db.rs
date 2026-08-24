@@ -43,7 +43,7 @@ impl StorageDb {
     /// Create a new, or fetch an already open, memory-based StorageDb. You must
     /// provide a name, but you are still able to have a single writer and many
     /// reader connections to the same memory DB open.
-    #[cfg(any(test, feature="testing"))]
+    #[cfg(any(test, feature = "testing"))]
     pub fn new_memory(db_path: &str) -> Result<Self> {
         let name = PathBuf::from(format!("file:{}?mode=memory&cache=shared", db_path));
         Self::new_named(name)
@@ -249,7 +249,7 @@ fn normalize_path(p: impl AsRef<Path>) -> Result<PathBuf> {
 }
 
 // Helpers for tests
-#[cfg(any(test, feature="testing"))]
+#[cfg(any(test, feature = "testing"))]
 pub mod test {
     use super::*;
     use std::sync::atomic::{AtomicUsize, Ordering};

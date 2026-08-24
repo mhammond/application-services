@@ -33,6 +33,7 @@ const DEFAULT_ENGINES: &[(&str, usize)] = &[
     ("forms", 1),
     ("history", 1),
     ("prefs", 2),
+    ("shared-settings", 1),
     ("tabs", 1),
 ];
 

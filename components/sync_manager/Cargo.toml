@@ -10,6 +10,7 @@ exclude = ["/android", "/ios"]
 autofill = { path = "../autofill" }
 sync15 = { path = "../sync15", features = ["sync-client"] }
 places = { path = "../places" }
+shared-settings = { path = "../shared-settings" }
 logins = { path = "../logins" }
 tabs = { path = "../tabs" }
 thiserror = "2"

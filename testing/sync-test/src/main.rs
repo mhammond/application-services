@@ -13,6 +13,7 @@ use std::{collections::HashSet, process};
 mod auth;
 mod autofill;
 mod logins;
+mod shared_settings;
 mod sync15;
 mod tabs;
 mod testing;
@@ -147,6 +148,7 @@ pub fn main() {
         crate::tabs::get_test_group(),
         crate::sync15::get_test_group(),
         crate::autofill::get_test_group(),
+        crate::shared_settings::get_test_group(),
     ];
     if opts.show_groups {
         println!(

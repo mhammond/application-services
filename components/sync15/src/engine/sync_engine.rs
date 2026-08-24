@@ -42,6 +42,10 @@ pub enum SyncEngineId {
     Addresses,
     CreditCards,
     History,
+    // An experimental engine for settings which are shared between all
+    // platforms, backed by the `shared-settings` component. Deliberately last -
+    // it's the lowest priority engine.
+    SharedSettings,
 }
 
 impl SyncEngineId {
@@ -56,6 +60,7 @@ impl SyncEngineId {
             Self::Addresses,
             Self::CreditCards,
             Self::History,
+            Self::SharedSettings,
         ]
         .into_iter()
     }
@@ -69,6 +74,7 @@ impl SyncEngineId {
             Self::Tabs => "tabs",
             Self::Addresses => "addresses",
             Self::CreditCards => "creditcards",
+            Self::SharedSettings => "shared-settings",
         }
     }
 }
@@ -90,6 +96,7 @@ impl TryFrom<&str> for SyncEngineId {
             "tabs" => Ok(Self::Tabs),
             "addresses" => Ok(Self::Addresses),
             "creditcards" => Ok(Self::CreditCards),
+            "shared-settings" => Ok(Self::SharedSettings),
             _ => Err(value.into()),
         }
     }

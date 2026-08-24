@@ -25,11 +25,13 @@ pub use api::SYNC_QUOTA_BYTES_PER_ITEM;
 
 pub use crate::error::{QuotaReason, WebExtStorageApiError};
 pub use crate::store::WebExtStorageStore;
-pub use crate::sync::{bridge::WebExtStorageBridgedEngine, SyncedExtensionChange};
+pub use crate::sync::{
+    bridge::WebExtStorageBridgedEngine, engine::WebExtSyncEngine, SyncedExtensionChange,
+};
 pub use api::UsageInfo;
 pub use api::{StorageChanges, StorageValueChange};
 
-#[cfg(any(test, feature="testing"))]
+#[cfg(any(test, feature = "testing"))]
 pub use db::test::new_mem_thread_safe_storage_db;
 
 uniffi::include_scaffolding!("webext-storage");

@@ -40,7 +40,11 @@ android {
 dependencies {
     implementation libs.mozilla.glean
 
+    // Part of the public API - consumers need `SyncEngine` etc.
+    api project(':sync15')
+
     testImplementation libs.mozilla.glean.forUnitTests
+    testImplementation project(':syncmanager')
 }
 
 ext.configureUniFFIBindgen("shared_settings")

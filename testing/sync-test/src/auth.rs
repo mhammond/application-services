@@ -9,7 +9,9 @@ use logins::encryption::{
     create_key, EncryptorDecryptor, ManagedEncryptorDecryptor, StaticKeyManager,
 };
 use logins::LoginStore;
+use shared_settings::SharedSettingsStore;
 use std::collections::{hash_map::RandomState, HashMap};
+use std::path::PathBuf;
 use std::sync::Arc;
 use sync15::{
     client::{SetupStorageClient, Sync15StorageClient},
@@ -36,6 +38,8 @@ pub struct TestClient {
     pub logins_store: Arc<LoginStore>,
     pub encdec: Arc<dyn EncryptorDecryptor>,
     pub tabs_store: Arc<TabsStore>,
+    pub shared_settings_store: Arc<SharedSettingsStore>,
+    shared_settings_db_path: PathBuf,
     sync_manager: SyncManager,
     persisted_state: Option<String>,
 }
@@ -71,6 +75,12 @@ impl TestClient {
         // for use in the `fully_reset_local_db` function below.
         let autofill_db_name = format!("sync-test-{}", device_name);
 
+        // shared-settings has no in-memory constructor, so each client gets its
+        // own temp file (removed and recreated by `fully_reset_local_db`).
+        let shared_settings_db_path =
+            std::env::temp_dir().join(format!("sync-test-shared-settings-{}.db", device_name));
+        let _ = std::fs::remove_file(&shared_settings_db_path);
+
         Ok(Self {
             cli,
             device,
@@ -79,6 +89,10 @@ impl TestClient {
             logins_store: Arc::new(LoginStore::new(":memory:", encdec.clone())?),
             encdec,
             tabs_store: Arc::new(TabsStore::new_with_mem_path("sync-test-tabs")),
+            shared_settings_store: Arc::new(SharedSettingsStore::new(
+                shared_settings_db_path.to_str().expect("valid path"),
+            )?),
+            shared_settings_db_path,
             sync_manager: SyncManager::new(),
             persisted_state: None,
         })
@@ -93,6 +107,9 @@ impl TestClient {
         self.autofill_store.clone().register_with_sync_manager();
         self.tabs_store.clone().register_with_sync_manager();
         self.logins_store.clone().register_with_sync_manager();
+        self.shared_settings_store
+            .clone()
+            .register_with_sync_manager();
         let sync_info = self.cli.sync_info()?.expect("CliFxa must have SYNC_SCOPE");
         let params = SyncParams {
             reason: SyncReason::User,
@@ -135,6 +152,9 @@ impl TestClient {
         self.autofill_store.clone().register_with_sync_manager();
         self.tabs_store.clone().register_with_sync_manager();
         self.logins_store.clone().register_with_sync_manager();
+        self.shared_settings_store
+            .clone()
+            .register_with_sync_manager();
         let sync_info = self.cli.sync_info()?.expect("CliFxa must have SYNC_SCOPE");
         let params = SyncParams {
             reason: SyncReason::User,
@@ -174,6 +194,12 @@ impl TestClient {
         self.autofill_store = Arc::new(AutofillStore::new_shared_memory(&self.autofill_db_name)?);
         self.logins_store = Arc::new(LoginStore::new(":memory:", self.encdec.clone())?);
         self.tabs_store = Arc::new(TabsStore::new_with_mem_path("sync-test-tabs"));
+        // Close the connection before removing the file so we really start fresh.
+        let _ = self.shared_settings_store.shutdown();
+        let _ = std::fs::remove_file(&self.shared_settings_db_path);
+        self.shared_settings_store = Arc::new(SharedSettingsStore::new(
+            self.shared_settings_db_path.to_str().expect("valid path"),
+        )?);
         Ok(())
     }
 }
