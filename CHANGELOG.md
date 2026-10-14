@@ -43,6 +43,10 @@
 - Better interoperability with clients which choose engines per device: sync IDs are adopted from `meta/syncids` rather than minted, and our declined engines are kept when `meta/global` has no engines or declined engines.
 - A fresh `meta/global` no longer lists declined engines in `engines`.
 
+### Sync Manager
+
+- `EngineChoicesModel.Device` implements per-device engine choices. It's for testing only for now.
+
 [Full Changelog](In progress)
 
 ## ✨ What's Changed ✨
