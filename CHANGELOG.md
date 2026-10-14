@@ -35,6 +35,10 @@
 - `nimbus-fml lint` now always exits with a non-zero status code if un-suppressed lints are repoted. ([#7735](https://github.com/mozilla/application-services/pull/7735))
 - `nimbus-fml lint` no longer distinguishes between errors and warnings during linting. ([#7734](https://github.com/mozilla/application-services/pull/7734))
 
+### Sync Manager
+
+- `EngineChoicesModel.Device` implements per-device engine choices. It's for testing only for now.
+
 # v161.0 (_2026-11-05_)
 
 [Full Changelog](https://github.com/mozilla/application-services/compare/v160.0...v161.0)
