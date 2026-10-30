@@ -262,13 +262,13 @@ fn test_login_deletes(c0: &mut TestClient, c1: &mut TestClient) {
     verify_login(&c1.logins_store, &login2);
     verify_login(&c1.logins_store, &login3);
 
-    // The 4 logins are for the for possible scenarios. All of them should result in the record
-    // being deleted.
+    // The 4 logins are for the for possible scenarios.
 
     // 1. Client A deletes record, client B has no changes (should delete).
     // 2. Client A deletes record, client B has also deleted record (should delete).
-    // 3. Client A deletes record, client B has modified record locally (should delete).
-    // 4. Same as #3 but in reverse order.
+    // 3. Client A modifies record and syncs, then client B deletes it (should revive, as a
+    //    remote modification beats a local tombstone).
+    // 4. Client A deletes record and syncs, then client B modifies it (should delete).
 
     // case 1. (c1 deletes record, c0 should have deleted on the other side)
     log::info!("Deleting {} from c1", l0id);
@@ -325,14 +325,15 @@ fn test_login_deletes(c0: &mut TestClient, c1: &mut TestClient) {
     log::info!("Syncing c1");
     sync_logins(c1).expect("c1 sync to work");
 
-    log::info!("{} should stay dead", l2id);
-    // Ensure we didn't revive it.
-    verify_missing_login(&c1.logins_store, &l2id);
+    // c0's modification was already on the server, and a remote modification beats a local
+    // tombstone (bug 1866370), so the login is revived rather than deleted.
+    log::info!("{} should be revived", l2id);
+    verify_login(&c1.logins_store, &login2_new);
 
     log::info!("Syncing c0");
     sync_logins(c0).expect("c0 sync to work");
-    log::info!("Should delete {}", l2id);
-    verify_missing_login(&c0.logins_store, &l2id);
+    log::info!("{} should still exist", l2id);
+    verify_login(&c0.logins_store, &login2_new);
 }
 
 fn test_delete_undecryptable_records_for_remote_replacement(
