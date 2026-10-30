@@ -1058,10 +1058,10 @@ impl LoginDb {
         for id in ids {
             let now_ms = util::system_time_ms_i64(SystemTime::now());
 
-            // For IDs that have, mark is_deleted and clear sensitive fields
-            let update_result = stmt.execute(named_params! { ":now_ms": now_ms, ":guid": id })?;
+            let exists = self.exists(id)?;
 
-            let exists = update_result == 1;
+            // For IDs that have, mark is_deleted and clear sensitive fields
+            stmt.execute(named_params! { ":now_ms": now_ms, ":guid": id })?;
 
             // Mark the mirror as overridden
             self.execute(
@@ -2624,6 +2624,27 @@ mod tests {
 
         let result = db.delete_many(vec![&Guid::random()]).unwrap();
         assert!(!result[0]);
+    }
+
+    #[test]
+    fn test_delete_mirror_records() {
+        ensure_initialized();
+        let db = LoginDb::open_in_memory();
+        // Only in the mirror (ie, synced but not locally modified), and a local change
+        // overriding the mirror.
+        test_utils::insert_login(&db, "mirror", None, Some("pw"));
+        test_utils::insert_login(&db, "both", Some("new-pw"), Some("old-pw"));
+
+        let result = db.delete_many(vec!["mirror", "both"]).unwrap();
+        assert_eq!(result, vec![true, true]);
+        assert!(!db.exists("mirror").unwrap());
+        assert!(!db.exists("both").unwrap());
+        // Both should now have local tombstones.
+        assert_eq!(get_local_guids(&db), vec!["both", "mirror"]);
+
+        // Deleting again reports they no longer exist.
+        assert!(!db.delete("mirror").unwrap());
+        assert!(!db.delete("both").unwrap());
     }
 
     #[test]
